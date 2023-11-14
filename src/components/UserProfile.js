@@ -1,48 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import HenCard  from "./HenCard";
+import { ethers } from 'ethers';
 import {
     Box,
-    Button,
     Heading,
     SimpleGrid,
     Text,
-    Stack,
-    Badge,
 } from '@chakra-ui/react';
 
-const HenCard = ({ hen, onSetForSale }) => (
-    <Box p={4} borderWidth="1px" borderRadius="lg" textAlign="center">
-        <Heading size="md" mb={2}>
-            {hen.name}
-        </Heading>
-        <Text>Hen ID: {hen.id.toString()}</Text>
-        <Text>Generation: {hen.generation.toString()}</Text>
-        <Text>Gender: {hen.gender ? 'Male' : 'Female'}</Text>
-        {hen.forSale ? (
-            <Stack mt={4} direction="column" align="center">
-                <Text>Price: {hen.price.toString()} ETH</Text>
-                <Badge colorScheme="green">For Sale</Badge>
-                <Button
-                    mt={2}
-                    colorScheme="red"
-                    onClick={() => onSetForSale(hen, 0)}
-                >
-                    Remove from Sale
-                </Button>
-            </Stack>
-        ) : (
-            <Stack mt={4} direction="column" align="center">
-                <Text>Not for Sale</Text>
-                <Button
-                    mt={2}
-                    colorScheme="teal"
-                    onClick={() => onSetForSale(hen, prompt('Enter the price in ETH'))}
-                >
-                    Set for Sale
-                </Button>
-            </Stack>
-        )}
-    </Box>
-);
+
 
 const UserProfile = ({ currentAccount, contractInstance }) => {
     const [ownedHens, setOwnedHens] = useState([]);
@@ -68,8 +34,11 @@ const UserProfile = ({ currentAccount, contractInstance }) => {
 
     const handleSetForSale = async (hen, price) => {
         try {
+            // Ensure price is a string before using parseEther
+            const parsedPrice = ethers.utils.parseEther(price.toString());
+
             // Call your smart contract function to set/unset the hen for sale
-            await contractInstance.setHenForSale(hen.id, price, !hen.forSale, {
+            await contractInstance.setHenForSale(hen.id, parsedPrice, {
                 from: currentAccount,
             });
 
@@ -80,6 +49,7 @@ const UserProfile = ({ currentAccount, contractInstance }) => {
             console.error('Error setting hen for sale:', error);
         }
     };
+
 
     return (
         <Box maxW="xl" mx="auto" p={8}>

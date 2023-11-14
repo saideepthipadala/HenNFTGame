@@ -43,10 +43,6 @@ const HenBreeding = ({ currentAccount, contractInstance }) => {
         from: currentAccount,
       });
 
-      // Optionally, you can fetch and display the updated list of hens after breeding
-      const updatedHens = await contractInstance.getHens();
-      console.log(updatedHens);
-
       // Reset form fields after successful breeding
       setMotherId('');
       setFatherId('');

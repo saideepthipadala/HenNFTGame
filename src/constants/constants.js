@@ -1,4 +1,4 @@
-const contractAddress = "0x266D6fbcf477f339F7e5fE938fa25B52b5e6EE81";
+const contractAddress = "0x746501CEfbd4866B4f081dC58d773874B3FD2c51";
 const contractABI = [
   {
     "inputs": [],
@@ -621,6 +621,11 @@ const contractABI = [
             "internalType": "bool",
             "name": "gender",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           }
         ],
         "internalType": "struct HenNFT.HenInfo[]",
@@ -675,6 +680,11 @@ const contractABI = [
             "internalType": "bool",
             "name": "gender",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           }
         ],
         "internalType": "struct HenNFT.HenInfo[]",
@@ -710,6 +720,11 @@ const contractABI = [
             "internalType": "bool",
             "name": "gender",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           }
         ],
         "internalType": "struct HenNFT.HenInfo[]",
@@ -751,6 +766,11 @@ const contractABI = [
             "internalType": "bool",
             "name": "gender",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
           }
         ],
         "internalType": "struct HenNFT.HenInfo[]",
@@ -1427,7 +1447,6 @@ const contractABI = [
     "type": "function"
   }
 ]
-
 const constants = {
   contractAddress,
   contractABI,
