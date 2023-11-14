@@ -1,4 +1,4 @@
-const contractAddress = "0x42B9E00B128357D8C165ad5a158dABe2003EF8f3";
+const contractAddress = "0x266D6fbcf477f339F7e5fE938fa25B52b5e6EE81";
 const contractABI = [
   {
     "inputs": [],
@@ -295,9 +295,9 @@ const contractABI = [
       },
       {
         "indexed": false,
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "winner",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "name": "RaceFinished",
@@ -788,9 +788,9 @@ const contractABI = [
             "type": "address[]"
           },
           {
-            "internalType": "uint256",
+            "internalType": "address",
             "name": "winner",
-            "type": "uint256"
+            "type": "address"
           }
         ],
         "internalType": "struct HenNFT.Race[]",
@@ -1198,9 +1198,9 @@ const contractABI = [
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "winner",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
