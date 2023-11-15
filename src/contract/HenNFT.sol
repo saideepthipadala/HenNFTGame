@@ -7,7 +7,7 @@ contract HenNFT is ERC721 {
     uint256 public nextHenId;
     uint256 public constant maxHens = 10000;
     address public admin;
-    uint256 public breedingCooldown = 6 days; // Adjust the duration as needed
+    uint256 public breedingCooldown = 6 days; 
     bool public firstHenMinted = false;
     bool public secondHenMinted = false;
     uint256 public raceIdCounter = 0;
@@ -21,9 +21,9 @@ contract HenNFT is ERC721 {
         bool forSale;
         bool isMale;
         uint256 price;
-        uint256 motherId; // ID of the mother hen
-        uint256 fatherId; // ID of the father hen
-        uint256 generation; // Generation of the hen
+        uint256 motherId; 
+        uint256 fatherId; 
+        uint256 generation; 
     }
     struct HenInfo {
         uint256 id;
@@ -75,12 +75,12 @@ contract HenNFT is ERC721 {
         require(msg.sender == admin, "Only admin can mint the first hen");
         require(!firstHenMinted, "First hen already minted");
 
-        uint256 motherId = 0; // Set motherId to 0 for the first hen
-        uint256 fatherId = 0; // Set fatherId to 0 for the first hen
-        uint256 speed = getRandomSpeed() + 3; // Initialize speed
-        uint256 strength = getRandomStrength() + 5; // Initialize strength
-        uint256 offspringGeneration = 1; // Initialize generation
-        bool isMaleOffspring = true; // Initialize gender
+        uint256 motherId = 0; 
+        uint256 fatherId = 0; 
+        uint256 speed = getRandomSpeed() + 3; 
+        uint256 strength = getRandomStrength() + 5;
+        uint256 offspringGeneration = 1; 
+        bool isMaleOffspring = true; 
         hens[nextHenId] = Hen(
             nextHenId,
             henName,
@@ -108,12 +108,12 @@ contract HenNFT is ERC721 {
         require(msg.sender == admin, "Only admin can mint the second hen");
         require(!secondHenMinted, "Second hen already minted");
 
-        uint256 motherId = 0; // Set motherId to 0 for the second hen
-        uint256 fatherId = 0; // Set fatherId to 0 for the second hen
-        uint256 speed = getRandomSpeed() + 11; // Initialize speed
-        uint256 strength = getRandomStrength() + 21; // Initialize strength
-        uint256 offspringGeneration = 1; // Initialize generation
-        bool isMaleOffspring = false; // Initialize gender
+        uint256 motherId = 0; 
+        uint256 fatherId = 0;
+        uint256 speed = getRandomSpeed() + 11; 
+        uint256 strength = getRandomStrength() + 21; 
+        uint256 offspringGeneration = 1; 
+        bool isMaleOffspring = false; 
 
         hens[nextHenId] = Hen(
             nextHenId,
@@ -159,7 +159,7 @@ contract HenNFT is ERC721 {
         hens[henId].forSale = false;
         hens[henId].price = 0;
 
-        // Update the ownedHens mapping for the seller and buyer
+      
         ownedHens[seller] = removeHen(ownedHens[seller], henId);
         ownedHens[msg.sender].push(hens[henId]);
 
@@ -195,7 +195,7 @@ contract HenNFT is ERC721 {
         return hensList;
     }
 
-    // Other functions, including breedHens, startRace, etc.
+   
 
     function _isOwnerOf(address player, uint256 henId)
         internal
@@ -227,7 +227,7 @@ contract HenNFT is ERC721 {
             )
         );
         uint256 randomNumber = uint256(hash);
-        return (randomNumber % 100);
+        return (randomNumber % 50);
     }
 
     function getOwnedHens(address owner) external view returns (HenInfo[] memory) {
@@ -248,7 +248,7 @@ contract HenNFT is ERC721 {
 }
 
 
-    // Modify breeding function to ensure compatibility.
+ 
     function breedHens(
         uint256 motherId,
         uint256 fatherId,
@@ -531,7 +531,7 @@ contract HenNFT is ERC721 {
 
                 Hen storage hen = hens[henId];
 
-                uint256 henPerformance = hen.speed + hen.strength;
+                uint256 henPerformance = hen.speed + hen.strength+getRandomSpeed();
 
                 if (henPerformance > maxPerformance) {
                     maxPerformance = henPerformance;

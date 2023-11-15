@@ -10,6 +10,8 @@ const HenCard = ({ hen, onBuy }) => (
           {hen.name}
         </Heading>
         <Text>Hen ID: {hen.id.toString()}</Text>
+        <Text>Gender: {hen.gender ? 'Male' : 'Female'}</Text>
+        <Text>Generation: {hen.generation.toString()}</Text>
         <Text>Price: {ethers.utils.formatEther(hen.price)} ETH</Text>
         <Button mt={4} colorScheme="teal" onClick={() => onBuy(hen)}>
           Buy

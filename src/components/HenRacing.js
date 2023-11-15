@@ -13,7 +13,9 @@ import {
   Heading,
   Text,
   SimpleGrid,
+  Alert, AlertIcon, AlertTitle, AlertDescription
 } from '@chakra-ui/react';
+
 import { ethers } from 'ethers';
 
 const CreateRaceTab = ({ newRaceEntryFee, setNewRaceEntryFee, handleStartRace }) => (
@@ -36,45 +38,51 @@ const CreateRaceTab = ({ newRaceEntryFee, setNewRaceEntryFee, handleStartRace })
     </Box>
   </TabPanel>
 );
-const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow }) => (
-  <TabPanel>
-    <Box p={4}>
-      <Text fontSize="xl" fontWeight="bold" mb={4}>
-        List of Races
-      </Text>
-      {races && races.length > 0 ? (
-        <SimpleGrid columns={1} spacing={4}>
-          {races.map((race) => (
-            <Box key={race.id} borderWidth="1px" borderRadius="lg" p={4}>
-              <Text mb={2} fontSize="lg" fontWeight="bold">
-                Race ID: {race.id.toString()}
-              </Text>
-              <Text mb={2}>
-                Entry Fee: {ethers.utils.formatEther(race.entryFee.toString())} ETH
-              </Text>
-              <Text mb={2}>
-                Start Time: {new Date(race.startTime * 1000).toLocaleString()}
-              </Text>
-              <Text mb={2}>Participants: {race.participants.length}</Text>
-              {race.winner !== '0x0000000000000000000000000000000000000000' && (
-                <Text mb={2} fontWeight="bold">
-                  Winner: {race.winner}
+
+
+const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow }) => {
+  return (
+    <TabPanel>
+      <Box p={4}>
+        <Text fontSize="xl" fontWeight="bold" mb={4}>
+          List of Races
+        </Text>
+        {races && races.length > 0 ? (
+          <SimpleGrid columns={1} spacing={4}>
+            {races.map((race) => (
+              <Box key={race.id} borderWidth="2px" borderRadius="lg" p={6} >
+                <Text mb={2} fontSize="lg" fontWeight="bold">
+                  Race ID: {race.id.toString()}
                 </Text>
-              )}
-              {currentAccount === ownerAccount && (
-                <Button onClick={() => handleStartRaceNow(race.id)} colorScheme="teal" mb={4}>
-                  Start Race Now
-                </Button>
-              )}
-            </Box>
-          ))}
-        </SimpleGrid>
-      ) : (
-        <Text>No races available.</Text>
-      )}
-    </Box>
-  </TabPanel>
-);
+                <Text mb={2}>
+                  Entry Fee: {ethers.utils.formatEther(race.entryFee.toString())} ETH
+                </Text>
+                <Text mb={2}>Participants: {race.participants.length}</Text>
+                {race.winner !== '0x0000000000000000000000000000000000000000' ? (
+                  <Alert status="success" mb={2}>
+                    <AlertIcon />
+                    <AlertTitle mr={2} fontWeight="bold">Winner: {race.winner}</AlertTitle>
+                    <AlertDescription>Race Ended</AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    {currentAccount === ownerAccount && (
+                      <Button onClick={() => handleStartRaceNow(race.id)} colorScheme="teal" mb={4}>
+                        Start Race Now
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Box>
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Text>No races available.</Text>
+        )}
+      </Box>
+    </TabPanel>
+  );
+};
 
 
 
@@ -89,14 +97,23 @@ const JoinRacePanel = ({
   setSelectedHenId,
   setEntryFee, // Add setEntryFee to update the entry fee
 }) => {
+  // Filter active races (those that haven't ended)
+  const activeRaces = races.filter((race) => race.winner === '0x0000000000000000000000000000000000000000');
+
   // Function to handle race selection
   const handleRaceSelection = (e) => {
     const selectedRaceId = e.target.value;
     // Find the selected race based on the race ID
-    const selectedRace = races.find((race) => race.id.toString() === selectedRaceId);
-    // Set the selected race ID and its entry fee in the state
-    setSelectedRaceId(selectedRaceId);
-    setEntryFee(ethers.utils.formatEther(selectedRace.entryFee.toString()));
+    const selectedRace = activeRaces.find((race) => race.id.toString() === selectedRaceId);
+    // Check if the selected race exists
+    if (selectedRace) {
+      // Set the selected race ID and its entry fee in the state
+      setSelectedRaceId(selectedRaceId);
+      setEntryFee(ethers.utils.formatEther(selectedRace.entryFee.toString()));
+    } else {
+      // Handle the case when the selected race is not found
+      console.error('Selected race not found or has already ended.');
+    }
   };
 
   return (
@@ -114,7 +131,7 @@ const JoinRacePanel = ({
               <option value="" disabled>
                 Choose a Race
               </option>
-              {races.map((race) => (
+              {activeRaces.map((race) => (
                 <option key={race.id} value={race.id.toString()}>
                   {" RACE ID: " +
                     race.id.toString() +
@@ -232,7 +249,7 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
       const parsedRaceId = selectedRaceId !== '' ? parseInt(selectedRaceId, 10) : null;
       const parsedEntryFee = entryFee !== '' ? ethers.utils.parseEther(entryFee) : null;
 
-      console.log('After parsing - parsedRaceId:', parsedRaceId, 'parsedEntryFee:', parsedEntryFee);
+     
 
       // Check if parsedRaceId and parsedEntryFee are valid numbers
       if (parsedRaceId === null || isNaN(parsedRaceId) || parsedEntryFee === null) {
@@ -268,25 +285,28 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
       console.error('Error starting race now:', error);
     }
   };
-
+  const isOwner = currentAccount === ownerAccount;
 
   return (
     <Box maxW="xl" mx="auto" p={8}>
       <Heading mb={8}>Hen Races</Heading>
       <Tabs isFitted variant="enclosed-colored" colorScheme="teal" size="lg">
         <TabList mb="1em">
-          <Tab onClick={() => setActiveTab('create')}>Create a Race</Tab>
+          {isOwner && (
+            <Tab onClick={() => setActiveTab('create')}>Create a Race</Tab>
+          )}
           <Tab onClick={() => setActiveTab('enter')}>Enter a Race</Tab>
           <Tab onClick={() => setActiveTab('list')}>List Races</Tab>
         </TabList>
         <TabPanels>
-          <CreateRaceTab
-
-            newRaceEntryFee={newRaceEntryFee}
-            setNewRaceEntryFee={setNewRaceEntryFee}
-            handleStartRace={handleStartRace}
-            races={races}
-          />
+          {isOwner && (
+            <CreateRaceTab
+              newRaceEntryFee={newRaceEntryFee}
+              setNewRaceEntryFee={setNewRaceEntryFee}
+              handleStartRace={handleStartRace}
+              races={races}
+            />
+          )}
           <EnterRaceTab
             races={races}
             selectedRaceId={selectedRaceId}
