@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react';
 
 import { ethers } from 'ethers';
+import { warning } from 'framer-motion';
 
 const CreateRaceTab = ({ newRaceEntryFee, setNewRaceEntryFee, handleStartRace }) => {
   return (
@@ -247,20 +248,32 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
       });
       await tx.wait()
       if(tx) {
+        toast({
+          title: "Successfully created a race!!",
+          position: "top",
+          isClosable: true,
+          status: "success"
+        })
         setRaces(await contractInstance.getRaces());
         setCreatedRace((prevState) => !prevState);
         setNewRaceEntryFee('');
       }
     } catch (error) {
+      if (error.message.includes("Entry fee must be greater than zero")){
+        toast({
+          title: "Entry fee must be greater than zero",
+          position: "top",
+          isClosable: true,
+          status: "warning"
+        })
+      }
       console.error('Error starting race:', error);
     }
   };
 
   const handleEnterRace = async () => {
     try {
-      console.log('Before parsing - selectedRaceId:', selectedRaceId, 'entryFee:', entryFee);
-
-      // Validate selectedRaceId and entryFee before parsing
+      
       const parsedRaceId = selectedRaceId !== '' ? parseInt(selectedRaceId, 10) : null;
       const parsedEntryFee = entryFee !== '' ? ethers.utils.parseEther(entryFee) : null;
 
@@ -278,12 +291,37 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
         value: parsedEntryFee,
       });
 
+      toast({
+        title: "Entered into the Race",
+        position: "top",
+        isClosable: true,
+        status: "success"
+      })
+
       // Refresh the list of races after entering a race
       setRaces(await contractInstance.getRaces());
+
       setEntryFee('');
       setSelectedRaceId('');
       setSelectedHenId('');
     } catch (error) {
+      if (error.message.includes("Hen is currently for sale")){
+        toast({
+          title:"Hen is currently for sale",
+          description:"You are not allowed to enter into race with this hen",
+          isClosable:true,
+          status:warning
+        })
+      }
+
+      if (error.message.includes("Insufficient entry fee")){
+        toast({
+          title: "Insufficient entry fee",
+          description: "Please check the entry fee!!",
+          isClosable: true,
+          status: warning
+        })
+      }
       console.error('Error entering race:', error);
     }
   };
@@ -294,6 +332,13 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
         from: ownerAccount,
       });
 
+      toast({
+        title: "Race has started!!",
+        position: "top",
+        isClosable: true,
+        status: "success"
+      })
+
       // Refresh the list of races after starting the race
       setRaces(await contractInstance.getRaces());
     } catch (error) {
@@ -303,8 +348,17 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
           description: "Can't start the race with 0 participants",
           position: "top",
           isClosable: true,
-          status: "error"
+          status: "warning"
         })
+      }
+      if (error.message.includes("Race has already started")){
+       toast({
+         title: "Race has already started",
+         description: "Cannot enter a race which has been started already!!",
+         position: "top",
+         isClosable: true,
+         status: "error"
+       }) 
       }
       console.error('Error starting race now:', error);
     }

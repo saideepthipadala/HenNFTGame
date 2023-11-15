@@ -1,19 +1,36 @@
 // src/components/Home.js
 import React from 'react';
-import { Box, Button, Text } from '@chakra-ui/react';
+import { Box, Button, Text, useToast } from '@chakra-ui/react';
 
 const Home = ({ currentAccount, contractInstance, ownerAccount }) => {
   const isOwner = currentAccount === ownerAccount;
+  const toast = useToast();
+
 
   const mintFirstHen = async () => {
     try {
       if (isOwner) {
         await contractInstance.mintFirstHen("Hen1");
         console.log("Minting the first hen...");
+        toast({
+          title: "Successfully Minted first hen!",
+          position: "top",
+          isClosable: true,
+          status: "success"
+        })
       } else {
         console.error('Only the owner can mint the first hen.');
       }
     } catch (error) {
+      if (error.message.includes("First hen already minted")){
+        toast({
+          title: "First Hen Already Minted",
+          description: "You can mint the 1st hen only once",
+          position: "top",
+          isClosable: true,
+          status: "warning"
+        })
+      }
       console.error('Error minting the first hen:', error);
     }
   };
@@ -23,12 +40,28 @@ const Home = ({ currentAccount, contractInstance, ownerAccount }) => {
       if (isOwner) {
         await contractInstance.mintSecondHen("Hen2");
         console.log("Minting the second hen...");
+        toast({
+          title: "Successfully Minted second hen!",
+          position: "top",
+          isClosable: true,
+          status: "success"
+        })
       } else {
         console.error('Only the owner can mint the second hen.');
       }
     } catch (error) {
+      if (error.message.includes("Second hen already minted")) {
+        toast({
+          title: "Second Hen Already Minted",
+          description: "You can mint the 2nd hen only once",
+          position: "top",
+          isClosable: true,
+          status: "warning"
+        })
+      }
       console.error('Error minting the second hen:', error);
     }
+    
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Select, Button, Heading, Input, FormControl, FormLabel, VStack } from '@chakra-ui/react';
+import { Box, Select, Button, Heading, Input, FormControl, FormLabel, VStack, useToast } from '@chakra-ui/react';
 
 const HenBreeding = ({ currentAccount, contractInstance }) => {
   const [motherId, setMotherId] = useState('');
@@ -7,6 +7,7 @@ const HenBreeding = ({ currentAccount, contractInstance }) => {
   const [offspringName, setOffspringName] = useState('');
   const [motherHens, setMotherHens] = useState([]);
   const [fatherHens, setFatherHens] = useState([]);
+  const toast = useToast();
 
   useEffect(() => {
     if (contractInstance && currentAccount) {
@@ -48,6 +49,14 @@ const HenBreeding = ({ currentAccount, contractInstance }) => {
       setFatherId('');
       setOffspringName('');
     } catch (error) {
+      if (error.message.includes("One or both parents are still in the cooling period")){
+        toast({
+          title: "One or both parents are still in the cooling period",
+          position: "top",
+          isClosable: true,
+          status: "warning"
+        })
+      }
       console.error('Error breeding hens:', error);
     }
   };
