@@ -10,8 +10,9 @@ const Home = ({ currentAccount, contractInstance, ownerAccount }) => {
   const mintFirstHen = async () => {
     try {
       if (isOwner) {
-        await contractInstance.mintFirstHen("Hen1");
+       const tx =  await contractInstance.mintFirstHen("Hen1");
         console.log("Minting the first hen...");
+        await tx.wait();
         toast({
           title: "Successfully Minted first hen!",
           position: "top",
@@ -38,8 +39,10 @@ const Home = ({ currentAccount, contractInstance, ownerAccount }) => {
   const mintSecondHen = async () => {
     try {
       if (isOwner) {
-        await contractInstance.mintSecondHen("Hen2");
+       const tx =  await contractInstance.mintSecondHen("Hen2");
         console.log("Minting the second hen...");
+
+      await tx.wait();
         toast({
           title: "Successfully Minted second hen!",
           position: "top",
@@ -72,7 +75,7 @@ const Home = ({ currentAccount, contractInstance, ownerAccount }) => {
 
       {!isOwner && (
         <Text mb={4}>
-          1. Mint your hens by purchasing them from the market.
+          Mint your hens by purchasing them from the market or breed from other hens.
         </Text>
       )}
 

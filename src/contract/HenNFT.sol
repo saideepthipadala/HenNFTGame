@@ -31,6 +31,7 @@ contract HenNFT is ERC721 {
         uint256 generation;
         bool gender;
         uint256 price;
+        bool forSale;
     }
     struct Race {
         uint256 id;
@@ -139,14 +140,21 @@ contract HenNFT is ERC721 {
         secondHenMinted = true;
     }
 
-    function setHenForSale(uint256 henId, uint256 price) external {
-        require(_isOwnerOf(msg.sender, henId), "Not the owner of the hen");
-        require(henExists(henId), "Hen with specified ID does not exist");
-        hens[henId].forSale = true;
-        hens[henId].price = price;
+  function setHenForSale(uint256 henId, uint256 price) external {
+    require(_isOwnerOf(msg.sender, henId), "Not the owner of the hen");
+    require(henExists(henId), "Hen with specified ID does not exist");
 
-        emit HenForSale(henId, price);
-    }
+    // Update the forSale and price properties
+    hens[henId].forSale = true;
+    hens[henId].price = price;
+
+    // Update the ownedHens mapping
+    ownedHens[msg.sender] = removeHen(ownedHens[msg.sender], henId);
+    ownedHens[msg.sender].push(hens[henId]);
+
+    emit HenForSale(henId, price);
+}
+
 
     function buyHen(uint256 henId) external payable {
         require(henExists(henId), "Hen with specified ID does not exist");
@@ -177,6 +185,10 @@ contract HenNFT is ERC721 {
 
         hens[henId].forSale = false;
         hens[henId].price = 0;
+
+        // Update the ownedHens mapping
+    ownedHens[msg.sender] = removeHen(ownedHens[msg.sender], henId);
+    ownedHens[msg.sender].push(hens[henId]);
 
         emit HenNoLongerForSale(henId);
     }
@@ -240,7 +252,8 @@ contract HenNFT is ERC721 {
             hensOwned[i].name,
             hensOwned[i].generation,
             hensOwned[i].isMale,
-            hensOwned[i].price
+            hensOwned[i].price,
+            hensOwned[i].forSale
         );
     }
 
@@ -359,7 +372,8 @@ contract HenNFT is ERC721 {
                     hens[i].name,
                     hens[i].generation,
                     hens[i].isMale,
-                    hens[i].price
+                    hens[i].price,
+                    hens[i].forSale
                 );
                 count++;
             }
@@ -391,7 +405,8 @@ contract HenNFT is ERC721 {
                     hens[i].name,
                     hens[i].generation,
                     hens[i].isMale,
-                    hens[i].price
+                    hens[i].price,
+                    hens[i].forSale
                 );
                 count++;
             }
@@ -419,7 +434,8 @@ contract HenNFT is ERC721 {
                     hens[i].name,
                     hens[i].generation,
                     hens[i].isMale,
-                    hens[i].price
+                    hens[i].price,
+                    hens[i].forSale
                 );
                 count++;
             }
