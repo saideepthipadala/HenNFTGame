@@ -13,44 +13,50 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Alert, AlertIcon, AlertTitle, AlertDescription
+  Alert, AlertIcon, AlertTitle, AlertDescription, useToast
 } from '@chakra-ui/react';
 
 import { ethers } from 'ethers';
 
-const CreateRaceTab = ({ newRaceEntryFee, setNewRaceEntryFee, handleStartRace }) => (
-  <TabPanel>
-
-    <Box p={4}>
-      <Heading mb={4}>Create a New Race</Heading>
-      <Box mb={4}>
-        <Text>Entry Fee (ETH):</Text>
-        <Input
-          type="text"
-          value={newRaceEntryFee}
-          onChange={(e) => setNewRaceEntryFee(e.target.value)}
-          placeholder="Enter entry fee"
-        />
-      </Box>
-      <Button colorScheme="teal" onClick={handleStartRace}>
-        Create Race
-      </Button>
-    </Box>
-  </TabPanel>
-);
-
-
-const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow }) => {
+const CreateRaceTab = ({ newRaceEntryFee, setNewRaceEntryFee, handleStartRace }) => {
   return (
-    <TabPanel>
+    <TabPanel className='mx-auto w-1/2'>
+
+      <Box p={4}>
+        <Heading mb={4}>Create a New Race</Heading>
+        <Box mb={4}>
+          <Text>Entry Fee (ETH):</Text>
+          <Input
+            type="text"
+            value={newRaceEntryFee}
+            onChange={(e) => setNewRaceEntryFee(e.target.value)}
+            placeholder="Enter entry fee"
+          />
+        </Box>
+        <Button colorScheme="teal" onClick={handleStartRace}>
+          Create Race
+        </Button>
+      </Box>
+    </TabPanel>
+  )
+};
+
+
+const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow, createdRace }) => {
+
+  useEffect(() => {
+
+  }, [createdRace])
+  return (
+    <TabPanel className='w-[100%]'>
       <Box p={4}>
         <Text fontSize="xl" fontWeight="bold" mb={4}>
           List of Races
         </Text>
         {races && races.length > 0 ? (
-          <SimpleGrid columns={1} spacing={4}>
+          <SimpleGrid className='w-[50vw]' columns={2} spacing={10}>
             {races.map((race) => (
-              <Box key={race.id} borderWidth="2px" borderRadius="lg" p={6} >
+              <Box key={race.id} borderWidth="2px" borderRadius="lg" p={6} className='flex flex-col' >
                 <Text mb={2} fontSize="lg" fontWeight="bold">
                   Race ID: {race.id.toString()}
                 </Text>
@@ -59,10 +65,11 @@ const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow 
                 </Text>
                 <Text mb={2}>Participants: {race.participants.length}</Text>
                 {race.winner !== '0x0000000000000000000000000000000000000000' ? (
-                  <Alert status="success" mb={2}>
-                    <AlertIcon />
-                    <AlertTitle mr={2} fontWeight="bold">Winner: {race.winner}</AlertTitle>
-                    <AlertDescription>Race Ended</AlertDescription>
+                  <Alert status="success" mb={2}  className='flex flex-col'>
+                    <div className='flex flex-row items-center'>
+                      <AlertIcon />
+                      <AlertTitle mr={2} fontWeight="bold" className='text-xs'>Winner: {race.winner}</AlertTitle>
+                    </div>
                   </Alert>
                 ) : (
                   <>
@@ -72,6 +79,9 @@ const ListRacesTab = ({ races, currentAccount, ownerAccount, handleStartRaceNow 
                       </Button>
                     )}
                   </>
+                )}
+                {race.winner !== "0x0000000000000000000000000000000000000000" && (
+                  <strong className='text-red-500 font-bold text-center mx-auto'>Race Ended</strong>
                 )}
               </Box>
             ))}
@@ -117,7 +127,7 @@ const JoinRacePanel = ({
   };
 
   return (
-    <TabPanel>
+    <TabPanel className='mx-auto w-1/2'>
       <Box p={4}>
         <Text fontSize="xl" fontWeight="bold" mb={4}>
           Join a Race
@@ -201,6 +211,8 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
   const [activeTab, setActiveTab] = useState('create');
   const [ownedHens, setOwnedHens] = useState([]);
   const [newRaceEntryFee, setNewRaceEntryFee] = useState('');
+  const [createdRace, setCreatedRace] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     const loadRaces = async () => {
@@ -225,17 +237,20 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
       loadRaces();
       loadOwnedHens();
     }
-  }, [currentAccount, contractInstance]);
+  }, [currentAccount, contractInstance, createdRace]);
 
   const handleStartRace = async () => {
     try {
       const parsedNewRaceEntryFee = ethers.utils.parseEther(newRaceEntryFee);
-      await contractInstance.startRace(parsedNewRaceEntryFee, {
+      const tx = await contractInstance.startRace(parsedNewRaceEntryFee, {
         from: ownerAccount,
       });
-
-      setRaces(await contractInstance.getRaces());
-      setNewRaceEntryFee('');
+      await tx.wait()
+      if(tx) {
+        setRaces(await contractInstance.getRaces());
+        setCreatedRace((prevState) => !prevState);
+        setNewRaceEntryFee('');
+      }
     } catch (error) {
       console.error('Error starting race:', error);
     }
@@ -282,13 +297,22 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
       // Refresh the list of races after starting the race
       setRaces(await contractInstance.getRaces());
     } catch (error) {
+      if (error.message.includes("No participants in the race")) {
+        toast({
+          title: "No participants in the race",
+          description: "Can't start the race with 0 participants",
+          position: "top",
+          isClosable: true,
+          status: "error"
+        })
+      }
       console.error('Error starting race now:', error);
     }
   };
   const isOwner = currentAccount === ownerAccount;
 
   return (
-    <Box maxW="xl" mx="auto" p={8}>
+    <Box className='w-2/3' mx="auto" p={8}>
       <Heading mb={8}>Hen Races</Heading>
       <Tabs isFitted variant="enclosed-colored" colorScheme="teal" size="lg">
         <TabList mb="1em">
@@ -318,7 +342,7 @@ const HenRacing = ({ currentAccount, contractInstance, ownerAccount }) => {
             selectedHenId={selectedHenId}
             setSelectedHenId={setSelectedHenId}
           />
-          <ListRacesTab races={races} currentAccount={currentAccount} ownerAccount={ownerAccount} handleStartRaceNow={handleStartRaceNow} />
+          <ListRacesTab createdRace={createdRace} races={races} currentAccount={currentAccount} ownerAccount={ownerAccount} handleStartRaceNow={handleStartRaceNow} />
         </TabPanels>
       </Tabs>
     </Box>
